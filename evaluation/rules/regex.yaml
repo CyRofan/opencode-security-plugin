@@ -1,0 +1,10 @@
+schema_version: "0.1"
+id: LOCAL-EVAL-REGEX-001
+title: "覆盖系统指令的句式示例"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: regex
+  pattern: 'override\s+(the\s+)?system\s+instructions'
+  flags: "i"

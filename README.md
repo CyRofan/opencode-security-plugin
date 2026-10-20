@@ -2,7 +2,7 @@
 
 基于 OpenCode v2 插件 API 的 Agent 运行时安全检测骨架，面向记忆投毒、工具滥用、资源过载和 RCE 四个检测域。
 
-**当前只完成框架接线，不提供攻击检测或安全阻断能力。** 检测器明确返回 `not-implemented`，不能把空发现列表解释为安全。
+**独立文本检测引擎已实现，插件中的四个检测域仍是占位实现，尚未自动接入引擎，也不执行安全阻断。** 占位检测器返回 `not-implemented`，不能把空发现列表解释为安全。
 
 ## 开发
 
@@ -27,8 +27,11 @@ src/
   core/types.ts               # 安全事件、发现、结果、处置决定
   core/runtime.ts             # 按 hook 路由到检测域
   domains/                    # 四个检测域的空实现
-  engine/contracts.ts         # 规则源、检测引擎、Judge、ATR 适配契约
-rules/example.yaml            # 禁用的规则示意，不会加载执行
+  engine/                     # YAML 规则、关键词/正则、Judge 与结果汇总
+rules/example.yaml            # 禁用的规则示意
+evaluation/                   # 评测样本及演示规则
+scripts/evaluate-text.ts      # 显式运行的真实模型评测入口
+docs/text-engine.md           # 引擎 API、规则格式与评测说明
 docs/architecture.md          # hook 映射与实现边界
 GLOSSARY.md                   # 项目领域术语
 ```
@@ -37,9 +40,12 @@ GLOSSARY.md                   # 项目领域术语
 
 - 记忆投毒仅指工具返回内容进入模型上下文后的污染，不覆盖持久记忆文件。
 - YAML 使用本项目最小模型，借鉴 ATR；尚不兼容或导入 ATR 原始规则。
-- 关键词、正则、LLM Judge 均只有契约，没有具体实现；不调用任何外部模型。
-- 尚未实现内容提取、HTTP/SSE 解析、会话统计、规则加载、策略求值、阻断执行及审计存储。
+- 独立引擎从本地 YAML 初始化规则快照，对文本执行关键词、正则与一次 Judge 调用，返回结论、原文证据、阶段状态和快照版本。
+- 模型服务、名称与凭据须显式配置；日常测试使用可控 Judge 或本地 HTTP 服务，不调用外部模型。
+- 尚未实现 hook 内容提取、HTTP/SSE 解析、会话统计、策略求值、阻断执行及审计存储。
 - 资源方向目前建模为应用预算；不提供操作系统沙箱。
+
+使用方法见 [文本检测引擎](docs/text-engine.md)。真实模型评测显式执行 `npm run evaluate:text -- --runs 3`，需要先配置模型环境变量；尚未测得任何外部模型的准确率。
 
 ## 参考
 

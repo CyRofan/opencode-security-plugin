@@ -1,13 +1,12 @@
-# 仅展示本项目规则形状；当前没有 YAML 加载器，也不会执行该规则。
+# 禁用的规则形状示例；运行时插件不会自动加载，独立引擎可显式加载此目录。
 schema_version: "0.1"
 id: LOCAL-EXAMPLE-001
 title: "工具返回内容检测占位"
 enabled: false
 domain: memory-poisoning
-hooks:
-  - tool.execute.after
 severity: low
 detection:
   method: keyword
+  mode: any
   keywords:
     - "EXAMPLE_ONLY_NOT_A_SECURITY_RULE"

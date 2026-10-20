@@ -1,0 +1,12 @@
+schema_version: "0.1"
+id: LOCAL-EVAL-KEYWORD-001
+title: "忽略既有指令的词句示例"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: keyword
+  mode: any
+  keywords:
+    - "ignore previous instructions"
+    - "忽略之前的指令"
