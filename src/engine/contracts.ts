@@ -51,10 +51,16 @@ export interface PatternStage {
 export interface JudgeStage {
   readonly status: "completed" | "failed" | "not-run";
   readonly verdict?: Verdict;
-  readonly reason?: string;
-  readonly evidence: readonly Evidence[];
+  readonly decision?: JevDecision;
   readonly error?: string;
   readonly durationMs: number;
+}
+
+export interface JevDecision {
+  readonly model: string;
+  readonly choice: Verdict;
+  readonly probabilities: Readonly<Record<Verdict, number>>;
+  readonly confidence: number;
 }
 
 // 外部模型/适配器的返回值始终在引擎边界校验，不信任静态类型。

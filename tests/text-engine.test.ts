@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { stringify } from "yaml";
 import { initializeTextEngine } from "../src/engine/index.ts";
 import type { TextInput } from "../src/engine/contracts.ts";
-import { benign, malicious, rule, rulesDirectory } from "./engine-fixtures.ts";
+import { benign, malicious, jevResponse, rule, rulesDirectory } from "./engine-fixtures.ts";
 
 test("从本地 YAML 检测完整关键词短语并保留原文证据", async (t) => {
   const engine = await initializeTextEngine({ rulesDirectory: await rulesDirectory(t),
@@ -114,20 +114,20 @@ test("Judge 服务异常被记录为检查不完整，同时保留规则证据",
   assert.ok(!JSON.stringify(result).includes("sensitive service details"));
 });
 
-test("非法 Judge 输出和不能对应原文的证据不会变成通过", async (t) => {
+test("非法 Jev 输出不会变成通过", async (t) => {
   const directory = await rulesDirectory(t);
   for (const [output, expectedError] of [
     ["not json", "invalid-output"],
-    [{ verdict: "benign", evidence: [] }, "invalid-output"],
-    [{ verdict: "safe", reason: "test", evidence: [] }, "invalid-output"],
-    [{ verdict: "benign", reason: "test", evidence: ["hallucinated"] }, "invalid-evidence"],
+    [{ model: "jev-test-version", answers: {} }, "invalid-output"],
+    [{ model: "jev-test-version", answers: { injection: { ...benign.answers.injection, choice: "safe" } } }, "invalid-output"],
+    [{ model: "jev-test-version", answers: { injection: { ...benign.answers.injection, probabilities: { benign: 2, malicious: 0, uncertain: 0 } } } }, "invalid-output"],
   ] as const) {
     const engine = await initializeTextEngine({ rulesDirectory: directory, judge: { async assess() { return output; } } });
     const result = await engine.detect({ content: "普通工具结果", source: "tool" });
     assert.equal(result.verdict, "uncertain");
     assert.equal(result.stages.judge.status, "failed");
     assert.equal(result.stages.judge.error, expectedError);
-    assert.equal(result.stages.judge.evidence.length, 0);
+    assert.equal(result.stages.judge.decision, undefined);
   }
 });
 
@@ -138,14 +138,14 @@ test("三类结果按语义结论、冲突和完整性汇总", async (t) => {
     ["普通结果", malicious, "malicious"],
     ["ignore previous instructions", malicious, "malicious"],
     ["steal", benign, "uncertain"],
-    ["普通结果", { verdict: "uncertain", reason: "缺少上下文", evidence: [] }, "uncertain"],
-    ["😀steal", { verdict: "malicious", reason: "越权指令", evidence: ["steal"] }, "malicious"],
+    ["普通结果", jevResponse("uncertain"), "uncertain"],
+    ["😀steal", malicious, "malicious"],
   ] as const) {
     const engine = await initializeTextEngine({ rulesDirectory: directory, judge: { async assess() { return output; } } });
     const result = await engine.detect({ content, source: "tool" });
     assert.equal(result.verdict, expected);
     assert.equal(result.stages.judge.status, "completed");
-    if (content === "😀steal") assert.deepEqual(result.stages.judge.evidence, [{ text: "steal", start: 2, end: 7 }]);
+    if (content === "😀steal") assert.deepEqual(result.stages.regex.matches[0].evidence, [{ text: "steal", start: 2, end: 7 }]);
   }
 });
 

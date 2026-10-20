@@ -54,7 +54,7 @@ export async function initializeTextEngine(options: {
         return { verdict: "uncertain", reason: parsed.success ? "text-too-long" : "invalid-input", ruleVersion: version,
           stages: { keyword: { status: "not-run", matches: [], durationMs: 0 } as PatternStage,
             regex: { status: "not-run", matches: [], durationMs: 0 } as PatternStage,
-            judge: { status: "not-run", evidence: [], durationMs: 0 } }, durationMs: performance.now() - started };
+            judge: { status: "not-run", durationMs: 0 } }, durationMs: performance.now() - started };
       }
       input = parsed.data;
       const keyword = runPatterns(rules.filter((rule) => rule.enabled && rule.detection.method === "keyword"), input.content);
@@ -69,5 +69,6 @@ export async function initializeTextEngine(options: {
   };
 }
 
-export { createChatCompletionsJudge } from "./chat-completions.ts";
-export type { Judge, TextInput, TextDetectionResult, Verdict } from "./contracts.ts";
+export { createJevJudge } from "./jev.ts";
+export { loadJevConfig } from "./config.ts";
+export type { Judge, JevDecision, TextInput, TextDetectionResult, Verdict } from "./contracts.ts";

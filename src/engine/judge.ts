@@ -1,10 +1,18 @@
 import { z } from "zod";
 import type { Judge, JudgeStage, TextInput } from "./contracts.ts";
 
-const outputSchema = z.strictObject({
-  verdict: z.enum(["benign", "malicious", "uncertain"]),
-  reason: z.string().trim().min(1), evidence: z.array(z.string().min(1)),
+const probability = z.number().min(0).max(1);
+const choiceSchema = z.object({
+  type: z.literal("choice"), choice: z.enum(["benign", "malicious", "uncertain"]),
+  probabilities: z.strictObject({ benign: probability, malicious: probability, uncertain: probability }),
+  confidence: probability,
+}).refine(({ probabilities, choice }) => {
+  const values = Object.values(probabilities);
+  // 允许服务端浮点序列化误差；这是格式校验，不是分类置信度阈值。
+  return Math.abs(values.reduce((sum, value) => sum + value, 0) - 1) <= 1e-6
+    && probabilities[choice] + 1e-6 >= Math.max(...values);
 });
+const outputSchema = z.object({ model: z.string().trim().min(1), answers: z.object({ injection: choiceSchema }) });
 
 export async function runJudge(judge: Judge, input: TextInput, instruction: string): Promise<JudgeStage> {
   const started = performance.now();
@@ -12,15 +20,12 @@ export async function runJudge(judge: Judge, input: TextInput, instruction: stri
   try {
     output = await judge.assess({ content: input.content, source: input.source, context: input.context, instruction });
   } catch {
-    return { status: "failed", error: "service-error", evidence: [], durationMs: performance.now() - started };
+    return { status: "failed", error: "service-error", durationMs: performance.now() - started };
   }
   const parsed = outputSchema.safeParse(output);
-  if (!parsed.success) return { status: "failed", error: "invalid-output", evidence: [], durationMs: performance.now() - started };
-  const result = parsed.data;
-  const evidence = result.evidence.map((text) => ({ text, start: input.content.indexOf(text), end: input.content.indexOf(text) + text.length }));
-  const valid = evidence.filter((item) => item.start >= 0);
-  return { status: valid.length === evidence.length ? "completed" : "failed",
-    verdict: result.verdict, reason: result.reason, evidence: valid,
-    ...(valid.length !== evidence.length ? { error: "invalid-evidence" } : {}),
+  if (!parsed.success) return { status: "failed", error: "invalid-output", durationMs: performance.now() - started };
+  const { choice, probabilities, confidence } = parsed.data.answers.injection;
+  return { status: "completed", verdict: choice,
+    decision: { model: parsed.data.model, choice, probabilities, confidence },
     durationMs: performance.now() - started };
 }

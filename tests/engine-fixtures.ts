@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import type { TestContext } from "node:test";
 import { stringify } from "yaml";
+import type { Verdict } from "../src/engine/contracts.ts";
 
 export function rule(id = "LOCAL-001", detection: object = {
   method: "keyword", mode: "any", keywords: ["ignore previous instructions"],
@@ -25,5 +26,12 @@ export async function rulesDirectory(t: TestContext, rules: unknown[] = [rule()]
   return directory;
 }
 
-export const benign = { verdict: "benign", reason: "正常内容", evidence: [] };
-export const malicious = { verdict: "malicious", reason: "试图改变任务目标", evidence: [] };
+export function jevResponse(choice: Verdict) {
+  return { model: "jev-test-version", answers: { injection: { type: "choice", choice,
+    probabilities: { benign: choice === "benign" ? 1 : 0, malicious: choice === "malicious" ? 1 : 0, uncertain: choice === "uncertain" ? 1 : 0 },
+    confidence: 1,
+  } } };
+}
+
+export const benign = jevResponse("benign");
+export const malicious = jevResponse("malicious");
