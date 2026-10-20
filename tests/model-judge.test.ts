@@ -70,3 +70,22 @@ test("模型拒绝、截断、无效响应和网络异常不会返回未发现�
   assert.equal(calls, 1);
   assert.ok(!JSON.stringify(result).includes("secret"));
 });
+
+test("模型 HTTP 错误响应中途断流仍返回服务失败", async (t) => {
+  const server = createServer((_request, response) => {
+    response.writeHead(503);
+    response.write("partial error body");
+    setImmediate(() => response.destroy());
+  });
+  server.listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve())));
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  const engine = await initializeTextEngine({ rulesDirectory: await rulesDirectory(t), judge: createChatCompletionsJudge({
+    endpoint: `http://127.0.0.1:${address.port}/chat/completions`, model: "local", apiKey: "local-key",
+  }) });
+  const result = await engine.detect({ content: "normal", source: "tool" });
+  assert.equal(result.verdict, "uncertain");
+  assert.equal(result.stages.judge.error, "service-error");
+});
