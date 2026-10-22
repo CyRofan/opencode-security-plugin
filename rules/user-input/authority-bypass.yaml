@@ -1,0 +1,11 @@
+# 语义改编自 ATR-2026-00005，rule_version 1；只观察当前正文，来源见 README.md。
+schema_version: "0.1"
+id: LOCAL-USER-002
+title: "用户正文以历史授权或身份声明要求跳过检查"
+enabled: true
+domain: memory-poisoning
+severity: medium
+detection:
+  method: regex
+  pattern: '(?:\b(?:you\s+(?:already|previously)\s+(?:agreed|approved)|as\s+we\s+agreed|I\s*am\s+(?:actually\s+)?(?:your\s+|an?\s+|the\s+)?(?:admin|administrator|developer)|I\x27m\s+(?:actually\s+)?(?:your\s+|an?\s+|the\s+)?(?:admin|administrator|developer))\b[^\r\n]{0,80}\b(?:skip|bypass|disable)\s+(?:the\s+)?(?:authorization|permission|security|safety)\b|(?:你(?:之前|已经)(?:同意|批准)|按(?:之前|刚才)的约定|我是(?:你的|系统)?(?:管理员|开发者))[^\r\n]{0,60}(?:跳过|绕过|关闭)(?:授权|权限|安全)(?:检查|确认|要求)?)'
+  flags: i

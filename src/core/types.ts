@@ -1,3 +1,5 @@
+import type { TextDetectionResult, TextInput } from "../engine/contracts.ts";
+
 export type DetectionDomain =
   | "memory-poisoning"
   | "tool-abuse"
@@ -24,7 +26,9 @@ export interface SecurityEvent {
   readonly hook: SecurityHook;
   readonly timestamp: number;
   readonly sessionID?: string;
-  // 原始 SDK 事件仅在内存中传递；内容提取、流解析留待实现。
+  readonly messageID?: string;
+  readonly text?: TextInput;
+  // 原始 SDK 事件仅在内存中传递；仅 prompt 正文已独立提取，流解析尚未实现。
   readonly payload: unknown;
 }
 
@@ -37,8 +41,10 @@ export interface Finding {
 
 export interface DetectionResult {
   readonly domain: DetectionDomain;
-  readonly status: "not-implemented" | "evaluated";
+  readonly status: "not-implemented" | "evaluated" | "unavailable" | "skipped";
   readonly findings: readonly Finding[];
+  readonly text?: TextDetectionResult;
+  readonly reason?: string;
 }
 
 export interface Detector {

@@ -1,0 +1,12 @@
+# 语义改编自 ATR-2026-00001，rule_version 1；来源与 blob SHA 见 README.md。
+# 缩窄到安全／系统约束，避免将正常任务修改直接作为模式命中。
+schema_version: "0.1"
+id: LOCAL-USER-001
+title: "用户正文要求覆盖安全或系统约束"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: regex
+  pattern: '(?:\b(?:ignore|disregard|override|bypass|disable)\s+(?:(?:all|the|your|previous)\s+){0,3}(?:security|safety|system)\s+(?:rules?|instructions?|polic(?:y|ies)|requirements?|constraints?|checks?)\b|(?:忽略|无视|绕过|覆盖|关闭|禁用)(?:所有|现有|之前的|系统的)?(?:安全|系统)(?:规则|要求|约束|指令|策略|检查))'
+  flags: i

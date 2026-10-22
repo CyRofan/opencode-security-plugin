@@ -7,7 +7,7 @@ export async function registerSecurityHooks(ctx: Context, runtime: SecurityRunti
   const controller = new AbortController();
 
   async function inspect(hook: SecurityHook, payload: unknown, sessionID?: string) {
-    // 本阶段只连接事件与检测域，结果尚未进入策略与执行器。
+    // 其他入口仍只连接事件与占位检测域。
     await runtime.inspect({ hook, timestamp: Date.now(), sessionID, payload });
   }
 
@@ -17,7 +17,22 @@ export async function registerSecurityHooks(ctx: Context, runtime: SecurityRunti
   }
 
   try {
-    for (const hook of ["prompt", "context", "compaction", "generate", "title", "model.request", "http.response", "experimental.ws.receive", "retry"] as const) {
+    registrations.push(await ctx.session.hook("prompt", async (event) => {
+      const results = await runtime.inspect({ hook: "session.prompt", timestamp: Date.now(),
+        sessionID: event.sessionID, messageID: event.messageID, payload: event,
+        text: { content: event.prompt.text, source: "user-input" } });
+      for (const result of results) {
+        if (result.text?.verdict !== "benign") {
+          const stages = result.text?.stages;
+          console.warn("[opencode-security]", { sessionID: event.sessionID, messageID: event.messageID,
+            domain: result.domain, verdict: result.text?.verdict ?? "uncertain",
+            reason: result.text?.reason ?? result.reason, ruleVersion: result.text?.ruleVersion,
+            stages: { keyword: stages?.keyword.status ?? "not-run", regex: stages?.regex.status ?? "not-run",
+              judge: stages?.judge.status ?? "not-run" } });
+        }
+      }
+    }));
+    for (const hook of ["context", "compaction", "generate", "title", "model.request", "http.response", "experimental.ws.receive", "retry"] as const) {
       registrations.push(await ctx.session.hook(hook, async (event) => {
         await inspect(`session.${hook}`, event, event.sessionID);
       }));

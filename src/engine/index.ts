@@ -71,4 +71,5 @@ export async function initializeTextEngine(options: {
 
 export { createJevJudge } from "./jev.ts";
 export { loadJevConfig } from "./config.ts";
+export type TextEngine = Awaited<ReturnType<typeof initializeTextEngine>>;
 export type { Judge, JevDecision, TextInput, TextDetectionResult, Verdict } from "./contracts.ts";
