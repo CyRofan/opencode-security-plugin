@@ -1,8 +1,10 @@
 import type { Context } from "@opencode/plugin/promise/plugin";
 import type { SecurityRuntime } from "../core/runtime.ts";
 import type { SecurityHook } from "../core/types.ts";
+import { applyPromptDecision } from "../core/prompt.ts";
+import type { SecurityNotice } from "../rpc.ts";
 
-export async function registerSecurityHooks(ctx: Context, runtime: SecurityRuntime) {
+export async function registerSecurityHooks(ctx: Context, runtime: SecurityRuntime, notify?: (notice: SecurityNotice) => Promise<void>) {
   const registrations: { dispose(): Promise<void> }[] = [];
   const controller = new AbortController();
 
@@ -22,13 +24,18 @@ export async function registerSecurityHooks(ctx: Context, runtime: SecurityRunti
         sessionID: event.sessionID, messageID: event.messageID, payload: event,
         text: { content: event.prompt.text, source: "user-input" } });
       for (const result of results) {
-        if (result.text?.verdict !== "benign") {
+        const decision = applyPromptDecision(event.prompt, result);
+        if (decision.action !== "allow") {
           const stages = result.text?.stages;
-          console.warn("[opencode-security]", { sessionID: event.sessionID, messageID: event.messageID,
-            domain: result.domain, verdict: result.text?.verdict ?? "uncertain",
-            reason: result.text?.reason ?? result.reason, ruleVersion: result.text?.ruleVersion,
+          const notice: SecurityNotice = { sessionID: event.sessionID, messageID: event.messageID,
+            domain: "memory-poisoning", verdict: result.text?.verdict === "malicious" && decision.applied ? "malicious" : "uncertain",
+            reason: decision.reason, ruleVersion: result.text?.ruleVersion,
+            action: decision.applied ? "replace" : "alert", applied: decision.applied,
             stages: { keyword: stages?.keyword.status ?? "not-run", regex: stages?.regex.status ?? "not-run",
-              judge: stages?.judge.status ?? "not-run" } });
+              judge: stages?.judge.status ?? "not-run" } };
+          console.warn("[opencode-security]", notice);
+          try { await notify?.(notice); }
+          catch { console.warn("[opencode-security]", { reason: "notification-unavailable", sessionID: event.sessionID, messageID: event.messageID }); }
         }
       }
     }));

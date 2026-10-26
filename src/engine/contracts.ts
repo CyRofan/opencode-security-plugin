@@ -53,7 +53,14 @@ export interface JudgeStage {
   readonly verdict?: Verdict;
   readonly decision?: JevDecision;
   readonly error?: string;
+  readonly httpStatus?: number;
   readonly durationMs: number;
+}
+
+// 仅携带安全的 HTTP 状态，不保留响应体、URL、认证头或原始服务异常。
+export class JudgeHttpError extends Error {
+  readonly httpStatus?: number;
+  constructor(httpStatus?: number) { super("Model service HTTP error"); this.httpStatus = httpStatus; }
 }
 
 export interface JevDecision {

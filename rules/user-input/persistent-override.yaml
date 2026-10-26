@@ -1,0 +1,11 @@
+# ATR-2026-00499 rule_version 2 语义改编，排除普通语言／格式偏好。
+schema_version: "0.1"
+id: LOCAL-USER-004
+title: "用户正文要求持续无条件服从或关闭安全约束"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: regex
+  pattern: '(?:from\s+now\s+on|for\s+the\s+rest\s+of|going\s+forward|以后始终|从现在开始|今后永远|永久记住)[\s\S]{0,160}(?:without\s+(?:any\s+)?(?:safety|security)\s+restrictions?|(?:skip|bypass|disable)[^\r\n]{0,20}safety\s+checks|无条件服从|不再[^\r\n]{0,10}安全检查|取消所有安全)'
+  flags: i

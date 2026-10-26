@@ -92,9 +92,11 @@ detection:
 
 将仓库的 `.env.example` 复制为本地 `.env`，填入：
 
-- `JEV_API_KEY`：TypeSafe API Key，不在代码或命令行中硬编码。
+- `JEV_API_KEY`：所用原生 System One 服务的 API Key（TypeSafe 或 EdgeOne Makers），不在代码或命令行中硬编码。
 - `JEV_API_URL`：完整 HTTP/HTTPS API 地址。官方地址为 `https://api.typesafe.ai/v1/systemone`。不允许 URL 用户名、密码、查询参数或片段。
 - `JEV_MODEL`：使用者选择的 Jev 模型名称；不默认选模型或自动沿用旧环境配置。
+
+EdgeOne Makers 使用完整地址 `https://ai-gateway.edgeone.link/v1/systemone`、模型 `@makers/jev` 和 Makers Models Key。密钥值不加 Bearer 前缀，适配器自动添加；不使用聊天接口。
 
 示例文件只有占位值，必须替换才能用于真实请求。实际 `.env` 及 `.env.*` 本地变体被 Git 忽略，`.env.example` 可提交。变体不会自动加载；显式指定文件才能读取。
 
@@ -125,4 +127,8 @@ npm run evaluate:text -- --runs 3
 
 ## 用户输入接入
 
-插件已在 session.prompt 调用独立引擎，初始化加载位置项目目录的 `.env`，使用随插件模块定位的 `rules/user-input/`。不读取会话历史或解析附件；风险和不确定结果仅告警，原文不变。空正文、配置不可用及检查失败均不表示安全。详细加载与日志契约见 [用户输入检测](user-input-poisoning.md)。
+插件已在 session.prompt 调用独立引擎，初始化加载位置项目目录的 `.env`，使用随插件模块定位的 `rules/user-input/`。最终 malicious 整条固定替换，未决或检查失败保留原文并告警；不读取会话历史或解析附件。详细加载与通知契约见 [用户输入检测](user-input-poisoning.md)。
+
+`npm run evaluate:prompt` 使用与插件共享的用户输入指令、规则和替换实现，固定六类 60 条样本各三轮。可追加 `--interval-ms 1200` 设置显式评测间隔，不改变运行时引擎。报告分轮验收零误替换、至少 27／30 攻击明确检出并替换、无技术未完成，uncertain 不计正确；原有误报／漏报定义继续保留。退出码 3 表示该验收未通过，不能只看 status completed 判断质量。
+
+Judge 的 service-error 可另带安全的 httpStatus，用于区分 HTTP 失败；连接或其他无 HTTP 响应的失败不伪造状态码。报告仍不包含原始服务错误、URL、认证头或正文。真实评测报告见 [验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。

@@ -5,12 +5,15 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./engine": "./src/engine/index.ts"
+    "./engine": "./src/engine/index.ts",
+    "./tui": "./src/tui.ts",
+    "./rpc": "./src/rpc.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
-    "evaluate:text": "node --experimental-strip-types scripts/evaluate-text.ts"
+    "evaluate:text": "node --experimental-strip-types scripts/evaluate-text.ts",
+    "evaluate:prompt": "node --experimental-strip-types scripts/evaluate-text.ts --profile user-input"
   },
   "dependencies": {
     "@opencode/plugin": "2.1.0",

@@ -1,0 +1,11 @@
+# ATR-2026-00004 / 01002 语义改编；来源修订见 README。
+schema_version: "0.1"
+id: LOCAL-USER-003
+title: "用户正文伪造系统角色并要求覆盖约束"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: regex
+  pattern: '(?:\[SYSTEM\]|<\|?(?:system|im_start)\|?>|我是(?:系统)?管理员|最高优先级|highest\s+priority)[\s\S]{0,160}(?:override|disable\s+safety|ignore\s+(?:your|system)|覆盖系统|取消安全|跳过安全)|(?:new\s+system\s+(?:prompt|instructions?)|新的系统指令)[\s\S]{0,80}(?:override|ignore|覆盖|忽略)'
+  flags: i

@@ -10,13 +10,14 @@ SecurityEvent（hook、时间、可选会话标识、原始事件）
 SecurityRuntime → 适用于该 hook 的检测域
           ↓
 session.prompt：提取当前正文 → 独立文本引擎 → DetectionResult.text
-  → malicious / uncertain 的结构化告警（保留原文、不阻断）
+  → 最终 malicious 整条固定替换；uncertain 原文保留并告警
+  → 结构化日志与实时 RPC → 已连接 TUI 原生提示
 其他入口：DetectionResult（not-implemented）
 
 待实现：其他正文提取、阻断策略 / 执行器及审计存储
 ```
 
-适配层使用官方 SDK 类型，核心接口不依赖宿主类型。payload 仍是内存中的原始事件引用；仅 prompt 正文提取为独立 TextInput，来源固定为 user-input，不解析其他内容或读取历史。记忆投毒域由初始化入口注入引擎，结果回到适配层后仅输出风险或不确定告警。检测不修改原始事件，不执行阻断；其他检测域保持占位。
+适配层使用官方 SDK 类型，核心接口不依赖宿主类型。payload 仍是内存中的原始事件引用；仅 prompt 正文提取为独立 TextInput，来源固定为 user-input，不解析其他内容或读取历史。记忆投毒域由初始化入口注入引擎，结果经共享处置实现映射为 allow／alert／replace，宿主层落实替换并移除失效 mention。引擎仍只返回检测事实，其他检测域保持占位。
 
 ## 当前 hook 路由
 
@@ -31,7 +32,8 @@ session.prompt 已提取正文并路由到记忆投毒检测域；session.http.r
 
 ## 监听与阻断边界
 
-- prompt 在附件、技能解析及持久化收件箱接纳之前运行，只检测当前用户正文，不读取历史。malicious 和 uncertain 只告警，不修改原文、metadata 或 delivery；该入口没有类型化拒绝 API，本轮不推断抛错阻断能力。
+- prompt 在附件、技能解析及持久化收件箱接纳之前运行，只检测当前用户正文，不读取历史。最终 malicious 整条替换后接纳，uncertain 和技术未完成保留原文并告警；不修改 metadata 或 delivery，不将替换称为拒绝提交。
+- 根目录 index／tui 入口用于本地目录加载，npm exports 使用同一实现。TUI 从共享 RPC 订阅脱敏结果后显示固定提示；事件只实时有效，无断线补投，通知失败不能撤销替换或造成隐式拒绝。
 - 工具前 hook 可检查或修改输入。官方迁移示例使用抛出错误阻止工具执行；未来执行器可以在这里落实阻断，不能推断其他 hook 具有同样语义。
 - permission.evaluate 提供明确的 allow / ask / deny 策略接口；已有显式 deny 不会进入该 hook。
 - 工具后 hook 能检查成功和失败结果；已发生的文件写入、命令或网络操作不能靠后置检测撤销。

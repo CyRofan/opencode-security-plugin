@@ -1,0 +1,11 @@
+# ATR-2026-00084 语义改编；包装本身不是攻击，引用可能命中并由 Jev 区分。
+schema_version: "0.1"
+id: LOCAL-USER-005
+title: "结构化用户正文中的指令覆盖"
+enabled: true
+domain: memory-poisoning
+severity: medium
+detection:
+  method: regex
+  pattern: '(?:["\x27]\s*:\s*["\x27]|<(?:instruction|system|command)>\s*|(?:instructions?|system|指令)\s*:\s*\|?\s*)(?:(?:ignore|override|disregard)\s+(?:(?:your|all|the|previous)\s+){0,3}(?:system|safety|security|previous)\s+(?:instructions?|rules?|policies)|(?:忽略|覆盖|绕过)(?:系统|安全)(?:指令|规则|约束))'
+  flags: i

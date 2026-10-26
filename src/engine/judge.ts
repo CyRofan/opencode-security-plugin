@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Judge, JudgeStage, TextInput } from "./contracts.ts";
+import { JudgeHttpError, type Judge, type JudgeStage, type TextInput } from "./contracts.ts";
 
 const probability = z.number().min(0).max(1);
 const choiceSchema = z.object({
@@ -19,8 +19,9 @@ export async function runJudge(judge: Judge, input: TextInput, instruction: stri
   let output: unknown;
   try {
     output = await judge.assess({ content: input.content, source: input.source, context: input.context, instruction });
-  } catch {
-    return { status: "failed", error: "service-error", durationMs: performance.now() - started };
+  } catch (error) {
+    return { status: "failed", error: "service-error", httpStatus: error instanceof JudgeHttpError ? error.httpStatus : undefined,
+      durationMs: performance.now() - started };
   }
   const parsed = outputSchema.safeParse(output);
   if (!parsed.success) return { status: "failed", error: "invalid-output", durationMs: performance.now() - started };

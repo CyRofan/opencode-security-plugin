@@ -53,8 +53,9 @@ export interface Detector {
   evaluate(event: SecurityEvent): Promise<DetectionResult>;
 }
 
-// 检测事实与处置决定分离，策略求值和执行留待后续实现。
+// 检测事实与处置分离；本轮仅 prompt 入口执行替换或告警。
 export interface SecurityDecision {
-  readonly action: "allow" | "alert" | "block";
+  readonly action: "allow" | "alert" | "replace" | "block";
+  readonly applied: boolean;
   readonly reason: string;
 }

@@ -1,0 +1,44 @@
+{
+  "hostVersion": "2.0.32",
+  "plugins": [
+    {
+      "id": "opencode-security-plugin",
+      "source": {
+        "type": "local",
+        "path": "C:\\Study\\opencode-security-plugin\\index.ts"
+      },
+      "features": {
+        "server": true,
+        "tui": true
+      },
+      "state": {
+        "status": "active"
+      }
+    }
+  ],
+  "normalAdmissionUnchanged": true,
+  "persistedReplacement": true,
+  "persistedMalicious": false,
+  "persistedNormal": true,
+  "fixture": {
+    "jevCalls": 2,
+    "modelCalls": 1,
+    "modelSawReplacement": true,
+    "modelSawMalicious": false,
+    "modelSawNormal": true
+  },
+  "tui": {
+    "hostVersion": "2.0.32",
+    "replacementToastObserved": true,
+    "uncertainToastObserved": true,
+    "incompleteToastObserved": true,
+    "transport": "local authenticated loopback proxy",
+    "rawInputDisplayedInNotice": false,
+    "processStopped": true,
+    "exitCode": 1
+  },
+  "reload": {
+    "jevCallsForOnePrompt": 1,
+    "activePlugins": 1
+  }
+}

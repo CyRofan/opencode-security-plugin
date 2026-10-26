@@ -89,6 +89,7 @@ test("默认 HTTP 传输完成 Jev 请求，并将服务错误及断流映射为
   const failed = await engine.detect({ content: "http-error", source: "tool" });
   assert.equal(failed.verdict, "uncertain");
   assert.equal(failed.stages.judge.error, "service-error");
+  assert.equal(failed.stages.judge.httpStatus, 503);
   assert.equal(requests, 3);
   assert.ok(!JSON.stringify(failed).includes("private body"));
 });

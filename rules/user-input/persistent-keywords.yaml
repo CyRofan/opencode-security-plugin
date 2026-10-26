@@ -1,0 +1,14 @@
+# 持续行为类别的高特异度字面组合；需三个短语同时出现，不能单词定性。
+schema_version: "0.1"
+id: LOCAL-USER-007
+title: "持续行为与安全检查的明确字面组合"
+enabled: true
+domain: memory-poisoning
+severity: high
+detection:
+  method: keyword
+  mode: all
+  keywords:
+    - "从现在开始"
+    - "无条件服从"
+    - "安全检查"

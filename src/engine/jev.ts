@@ -1,6 +1,6 @@
 import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
-import type { Judge, Verdict } from "./contracts.ts";
+import { JudgeHttpError, type Judge, type Verdict } from "./contracts.ts";
 import { JevConfigurationError } from "./config.ts";
 
 export interface JevRequest {
@@ -31,7 +31,7 @@ const send: JevTransport = async ({ endpoint, headers, body }) => {
       response.on("error", reject);
       if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
         response.resume();
-        reject(new Error("Model service HTTP error"));
+        reject(new JudgeHttpError(response.statusCode));
         return;
       }
       const chunks: Buffer[] = [];

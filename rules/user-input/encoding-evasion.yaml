@@ -1,0 +1,11 @@
+# ATR-2026-00080 语义改编；不自动解码，不将裸 Base64 或特殊字符定性。
+schema_version: "0.1"
+id: LOCAL-USER-006
+title: "用户正文的可见编码或零宽混淆操纵迹象"
+enabled: true
+domain: memory-poisoning
+severity: medium
+detection:
+  method: regex
+  pattern: '(?:(?:decode|解码)[^\r\n]{0,60}(?:execute|follow|obey|执行|服从)[^\r\n]{0,80}(?:[A-Za-z0-9+/]{20,}={0,2}|(?:\\u[0-9a-f]{4}){3,})|i[\u200b-\u200d\ufeff]+gnore\s+(?:your\s+)?(?:security|safety|system)\s+rules?|忽[\u200b-\u200d\ufeff]+略(?:系统|安全)(?:规则|约束))'
+  flags: i
