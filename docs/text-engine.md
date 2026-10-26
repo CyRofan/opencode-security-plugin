@@ -102,7 +102,7 @@ EdgeOne Makers 使用完整地址 `https://ai-gateway.edgeone.link/v1/systemone`
 
 `loadJevConfig(path?)` 默认读当前工作目录的 `.env`，采用 Node.js 内置环境文本解析，合并时已有进程变量优先，不覆盖进程环境。已有空变量同样优先，随后被必填校验拒绝。文件不存在时可以完全使用进程环境；其他读取错误会报告安全的配置错误。缺失项仅提示变量名，不回显实际值。引擎导入及 detect 均不会隐式加载文件，配置由调用入口加载并注入。
 
-不要打印 config、认证头或环境文件正文，也不要提交实际凭据。本次未创建或填入实际 `.env`。
+不要打印 config、认证头或环境文件正文，也不要提交实际凭据。仓库仅提供占位示例，实际 `.env` 由使用者在本地配置。
 
 ## 重复评测
 
@@ -112,7 +112,7 @@ EdgeOne Makers 使用完整地址 `https://ai-gateway.edgeone.link/v1/systemone`
 npm run evaluate:text -- --runs 3
 ```
 
-可选 `--rules <目录>`、`--samples <JSON文件>`、`--env-path <环境文件>`。样本包含唯一 id、正文、来源、可选上下文、expected（benign/malicious）及可选 category、rationale。标签及标注理由不发送给 Jev。
+通用 `text` 模式可选 `--rules <目录>`、`--samples <JSON文件>`、`--env-path <环境文件>`。样本包含唯一 id、正文、来源、可选上下文、expected（benign/malicious）及可选 category、rationale、language。标签、类别、语言及标注理由不发送给 Jev。`user-input` 模式另有固定样本组成要求，并忽略样本中的 context，以保持与插件只检测当前正文的行为一致。
 
 报告以 JSON 输出请求模型名、实际模型版本集合 actualModels、运行次数、规则版本、逐项结论、阶段状态和耗时。成功的 Judge 阶段附带 decision，包含分类、概率、置信度和实际模型版本；失败或未执行时不伪造这些值。不输出待检正文、规则证据或凭据；若报告字符串意外含有当前 API Key，以 `[REDACTED]` 替换。样本均为可公开的合成示例；没有自动记录其他会话内容。
 
@@ -120,15 +120,35 @@ npm run evaluate:text -- --runs 3
 - 漏报：预期攻击且整体为 benign；分母为攻击样本执行总次数。
 - uncertain 单独统计，不当作正确；同时报告已给出确定结论的比例，避免低误报/漏报掩盖大量不确定。
 - technicalFailure 单独统计阶段失败；incompleteCheck 包含失败和未执行。出现未完成检查时报告状态为 incomplete。
-- 分母为零时比率为 null。没有预设准确率通过阈值。
+- 分母为零时比率为 null。通用 text 模式不设质量通过门槛；用户输入模式另按下方的逐轮标准验收。
 - 全部检查不完整时退出码为 2；配置、样本或初始化错误为 1；部分失败仍输出完整统计，需检查报告状态。
 
-`npm test` 使用可控 Jev 响应、传输及本地 HTTP 服务，不依赖外部模型。真实 Jev 评测必须单独显式执行。当前尚未运行真实 Jev 质量评测，不能据本地替身测试声称模型准确率。
+`npm test` 使用可控 Jev 响应、传输及本地 HTTP 服务，不依赖外部模型。2026-10-26 已执行两批用户授权的真实 EdgeOne Jev 评测，共 360 次；追加复测第三轮仍有一次 invalid-output，严格质量验收未通过，见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。已批准预算全部用完，后续真实请求需另行明确预算，不能据本地测试或零误替换单项声称整体通过。
+
+## 检查与故障排查
+
+从仓库根目录运行 `npm run typecheck` 和 `npm test`，不需要实际 Jev 凭据。通用评测的默认规则、样本及 `.env` 相对于工作目录；用户输入评测的默认规则随插件模块定位，默认样本与 `.env` 仍相对于工作目录。宿主插件读取其加载位置项目目录的 `.env`，不是固定读取插件仓库目录。
+
+| 现象 | 检查位置与处理 |
+| --- | --- |
+| 提示缺少 JEV 变量 | 检查本地文件是否填齐三项、是否从正确目录启动，或显式指定 `--env-path`。已有空环境变量优先，不会回退文件值。 |
+| JEV_API_URL 配置非法 | 使用完整 HTTP/HTTPS API URL，去掉用户信息、查询参数和片段；不要通过 URL 传密钥。 |
+| 初始化报 Invalid YAML / Invalid rule / Duplicate rule ID / Invalid regex | 修正规则后重新初始化。禁止把加载失败当作规则未命中。 |
+| text-too-long / invalid-input | 检查正文类型、非空来源和正文码点数量；本次三阶段未运行，没有完整风险结论。 |
+| Judge 的 service-error | 查看可用的 httpStatus 并检查网络、地址、模型和认证；没有 HTTP 响应时不伪造状态码。旧报告没有状态码，不能猜测为限流。不打印认证头或完整配置，不自动重试。 |
+| Judge 的 invalid-output | 检查响应 model、answers.injection、类别、完整概率分布及 confidence 是否符合契约。没有生成式理由和证据本身不是错误。 |
+| 模式命中、整体却为 uncertain | 可能是 Jev 选择 benign、原生 uncertain 或必需阶段未完成；查看各阶段状态与规则证据。 |
+| 评测状态 incomplete 或退出码 2 | 至少有检查不完整；退出码 2 表示全部不完整。不能据此声称真实模型质量已验证。 |
+| 用户输入评测退出码 3 | 分轮质量验收未通过，即使 status 为 completed 也可能有误替换或漏检。查看 acceptance.rounds，不用三轮平均数掩盖单轮失败。 |
+| 加载插件后未拒绝提交 | 该入口只对最终 malicious 整条替换后接纳；未决和技术未完成保留原文并告警，不是拒绝提交。其他入口仍为占位。 |
+| 终端没有安全提示 | 确认根 tui 入口随插件加载且 TUI 已连接，查看 notification-unavailable 日志；实时 RPC 不补投断线期间通知。 |
+
+当前交接与验证记录见 [交接状态](status.md)。
 
 ## 用户输入接入
 
 插件已在 session.prompt 调用独立引擎，初始化加载位置项目目录的 `.env`，使用随插件模块定位的 `rules/user-input/`。最终 malicious 整条固定替换，未决或检查失败保留原文并告警；不读取会话历史或解析附件。详细加载与通知契约见 [用户输入检测](user-input-poisoning.md)。
 
-`npm run evaluate:prompt` 使用与插件共享的用户输入指令、规则和替换实现，固定六类 60 条样本各三轮。可追加 `--interval-ms 1200` 设置显式评测间隔，不改变运行时引擎。报告分轮验收零误替换、至少 27／30 攻击明确检出并替换、无技术未完成，uncertain 不计正确；原有误报／漏报定义继续保留。退出码 3 表示该验收未通过，不能只看 status completed 判断质量。
+`npm run evaluate:prompt` 使用与插件共享的用户输入指令、规则和替换实现，固定六类 60 条样本各三轮，合规运行规划 180 次真实请求。可追加 `--interval-ms 1200` 设置显式评测间隔，不改变运行时引擎，也不自动重试。报告分轮验收零误替换、至少 27／30 攻击明确检出并替换、无技术未完成，uncertain 不计正确；原有误报／漏报定义继续保留。退出码 3 表示该验收未通过，不能只看 status completed 判断质量。运行命令前需单独确认预算，现有 360 次不是可继续使用的余额。
 
 Judge 的 service-error 可另带安全的 httpStatus，用于区分 HTTP 失败；连接或其他无 HTTP 响应的失败不伪造状态码。报告仍不包含原始服务错误、URL、认证头或正文。真实评测报告见 [验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。

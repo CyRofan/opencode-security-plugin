@@ -2,6 +2,8 @@
 
 基于 OpenCode v2 插件 API 的 Agent 运行时安全检测骨架，面向记忆投毒、工具滥用、资源过载和 RCE 四个检测域。
 
+当前实现基线：`77fccee`。能力、验证结果与未完成事项的权威入口是[交接状态](docs/status.md)。
+
 **用户正文已在 `session.prompt` 接入检测：最终恶意时整条固定替换，未决或检查失败时保留原文并告警。** 已连接 TUI 显示原生提示，同时保留服务器日志；不拒绝提交。工具返回、上下文和其他检测域仍为占位，不能把空发现列表解释为安全。
 
 ## 开发
@@ -23,8 +25,10 @@ npm test
 ## 结构
 
 ```text
+index.ts / tui.ts              # 本地目录加载入口，转发同一实现
 src/
   index.ts                    # v2 插件入口
+  tui.ts / rpc.ts             # 终端通知与共享 RPC 契约
   adapters/opencode-v2.ts      # 注册 hook、订阅公共事件、卸载清理
   core/types.ts               # 安全事件、发现、结果、处置决定
   core/runtime.ts             # 按 hook 路由到检测域
@@ -39,7 +43,7 @@ docs/architecture.md          # hook 映射与实现边界
 GLOSSARY.md                   # 项目领域术语
 ```
 
-## 本轮范围
+## 当前能力与边界
 
 - 记忆投毒不限于工具返回污染；本轮只检测当前用户正文，不解析附件、技能或关联历史，不提供持久记忆文件防护。
 - YAML 使用本项目最小模型，借鉴 ATR；尚不兼容或导入 ATR 原始规则。
@@ -49,9 +53,17 @@ GLOSSARY.md                   # 项目领域术语
 - 已提取 prompt 正文；其他 hook 内容提取、HTTP/SSE 解析、会话统计、阻断策略及审计存储尚未实现。
 - 资源方向目前建模为应用预算；不提供操作系统沙箱。
 
-使用方法见 [文本检测引擎](docs/text-engine.md)。用户输入质量评测运行 `npm run evaluate:prompt`，使用六类共 60 条标注样本，各 3 轮。首次真实评测未通过，后续复测状态见 [验证记录](.scratch/user-input-poisoning-completion/validation/README.md)，不能据本地测试声称准确率。
+独立 API 和通用评测见[文本检测引擎](docs/text-engine.md)。用户输入质量评测命令 `npm run evaluate:prompt` 使用六类 60 条样本各 3 轮，规划 180 次真实请求，执行前需单独确认预算。2026-10-26 两批共 360 次已用完；追加复测仍有一次 invalid-output，整体严格验收未通过，详见[验证记录](.scratch/user-input-poisoning-completion/validation/README.md)。
 
 插件在初始化时读取加载位置项目目录的 `.env`，并加载随插件提供的 `rules/user-input/`。日志和通知仅包含关联标识、结论、处置及检查状态，不记录正文。配置或规则不可用时明确提示未检测，仍保留提交。详细范围与字段见 [用户输入检测](docs/user-input-poisoning.md)。
+
+## 文档入口
+
+- [架构与 hook 边界](docs/architecture.md)：区分运行时接线和独立引擎。
+- [引擎接入与故障排查](docs/text-engine.md)：配置、API、规则和评测。
+- [交接状态](docs/status.md)：已完成能力、验证记录和未完成事项。
+
+`.scratch/` 保留需求与任务历史，不替代当前使用文档；旧生成式 Judge 要求已由 Jev 规格取代。
 
 ## 参考
 

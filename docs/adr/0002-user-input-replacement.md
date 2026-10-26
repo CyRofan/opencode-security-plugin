@@ -6,6 +6,6 @@
 
 沿用现有三态汇总：规则命中仅作为证据，最终 malicious 才替换。规则与 Jev benign 冲突、语义 uncertain 及技术未完成均保留正文并明确告警，继续提交属于可用性取舍，不等于安全通过。
 
-后续交付包含已连接 TUI 的原生提示和服务器日志；通知不包含攻击原文，实时 RPC 不承担断线补投。规则六类覆盖、180 次真实模型评测预算及验收标准见[已确认讨论记录](../../.scratch/user-input-poisoning-completion/discussion.md)。
+实现包含已连接 TUI 的原生提示和服务器日志；通知不包含攻击原文，实时 RPC 不承担断线补投。最初确认的六类覆盖、180 次评测及标准见[讨论记录](../../.scratch/user-input-poisoning-completion/discussion.md)；实施阶段另获一次 180 次授权，总计 360 次已用完，当前预算状态以[验证记录](../../.scratch/user-input-poisoning-completion/validation/README.md)为准。
 
 2026-10-26 已完成该处置及 TUI 通知的实现，真实 OpenCode 2.0.32 的持久输入与模型请求替换已验证。真实 Jev 的严格质量验收尚未通过，不能将代码实现等同于完整验收，证据见[验证记录](../../.scratch/user-input-poisoning-completion/validation/README.md)。

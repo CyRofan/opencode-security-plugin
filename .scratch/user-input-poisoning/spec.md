@@ -6,6 +6,8 @@ Date: 2026-10-22
 
 实施记录：2026-10-22，用户随后调用 implement 授权实现及当前分支提交。session.prompt 用户正文检测与非阻断告警已完成；npm run typecheck 通过，npm test 的 46 项本地确定性测试全部通过。Standards、Spec 两轴审查各 0 项发现。真实 OpenCode v2 宿主加载、告警可见性及真实 Jev 质量尚未验证。以下问题背景、发布阶段限制和 Further Notes 保留规格发布时语境；当前使用与能力说明见 [用户输入检测](../../docs/user-input-poisoning.md)。
 
+后续阶段：2026-10-26 的[输入替换完善规格](../user-input-poisoning-completion/spec.md)与 [ADR-0002](../../docs/adr/0002-user-input-replacement.md)取代本页“保留恶意正文、仅日志告警”的处置目标。当前代码基线为 77fccee，宿主验证已完成，真实质量验收仍未通过；详见[交接状态](../../docs/status.md)。本页 resolved 只表示 2026-10-22 阶段交付，不代表后续质量门槛已通过。
+
 ## Problem Statement
 
 用户希望在 OpenCode v2 中复用现有文本检测引擎，对直接提交的消息正文识别记忆投毒风险。目前插件已注册用户输入 hook，但没有将正文提取后送入记忆投毒检测域和独立引擎，也没有把结果转换成可观察的告警。已有独立引擎通过本地 YAML、关键词、正则及 Jev 原生 Choice 返回三态结果，这不代表宿主中的用户输入已经受到检测。

@@ -1,6 +1,8 @@
 # Jev 原生语义裁判与环境配置规格
 
-Status: ready-for-agent
+Status: resolved
+
+实施记录：2026-10-20，`141142d` 已完成 Jev 替换与环境配置。类型检查及 30 项本地确定性测试通过，真实 Jev 质量评测尚未运行。以下问题背景和 Further Notes 保留实施前语境；当前使用方法见 [引擎文档](../../docs/text-engine.md)，现状见 [交接状态](../../docs/status.md)。
 
 ## Problem Statement
 

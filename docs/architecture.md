@@ -1,6 +1,6 @@
-# 初步架构
+# 架构与集成边界
 
-## 数据路径
+## 运行时数据路径
 
 ```text
 OpenCode v2 hook / 公共事件
@@ -18,6 +18,18 @@ session.prompt：提取当前正文 → 独立文本引擎 → DetectionResult.t
 ```
 
 适配层使用官方 SDK 类型，核心接口不依赖宿主类型。payload 仍是内存中的原始事件引用；仅 prompt 正文提取为独立 TextInput，来源固定为 user-input，不解析其他内容或读取历史。记忆投毒域由初始化入口注入引擎，结果经共享处置实现映射为 allow／alert／replace，宿主层落实替换并移除失效 mention。引擎仍只返回检测事实，其他检测域保持占位。
+
+## 独立文本引擎数据路径
+
+```text
+配置入口：.env 与进程环境 → Jev 配置 → 注入适配器
+初始化：本地 YAML → 整体校验 → 固定规则快照与版本
+检测：正文 / 来源 / 可选任务上下文
+  → 输入和长度校验 → 关键词 → 正则 → 一次 Jev Choice
+  → 原生响应校验 → 三态结果 / 规则证据 / 阶段状态 / 概率与模型版本
+```
+
+这条路径已实现，可由独立调用方、评测命令及 prompt 检测使用。运行时 DetectionResult.text 保留完整引擎结果，模式命中映射为 Finding；没有规则发现不代表 benign。环境文件仅由显式配置入口读取，引擎导入和每次检测不会自行加载配置。插件读取加载位置项目目录的环境文件，规则目录随插件模块定位；初始化不可用时逐消息提示未检测。
 
 ## 当前 hook 路由
 
@@ -56,7 +68,9 @@ session.prompt 已提取正文并路由到记忆投毒检测域；session.http.r
 
 ## 验证基线
 
-2026-10-20 查询 npm 的 latest 标签后安装并锁定 `@opencode/plugin@2.1.0`。实现对照安装包类型及下列官方文档；类型检查不替代真实宿主中的加载、异常传播和取消测试。
+当前代码基线为 `77fccee`。插件 SDK 锁定 `@opencode/plugin@2.1.0`；2026-10-26 在实际 OpenCode `2.0.32` 验证了本地加载、持久正文与主模型输入替换、三种 TUI 提示及重载。模型端点使用本地受控服务，不能当作真实 Jev 分类质量证据。
+
+真实 EdgeOne Jev 共执行两批、各 180 次；追加复测仍有一次无效响应，严格质量验收未通过。当前验证状态和预算边界见[交接状态](status.md)，原始结果见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。下列官方链接用于说明契约，不替代宿主运行与质量证据。
 
 - [插件 API、hook 及事件边界](https://opencode.ai/v2/docs/build/plugins/)
 - [迁移示例与工具前阻断](https://opencode.ai/v2/docs/build/plugins/migrate-v1/)

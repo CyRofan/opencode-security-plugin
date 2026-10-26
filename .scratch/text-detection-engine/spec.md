@@ -1,6 +1,8 @@
 # 文本检测引擎规格
 
-Status: ready-for-agent
+Status: resolved
+
+实施记录：2026-10-20，初始引擎由 `0ee3fd7` / `07d9b26` 完成。本页保留需求形成时的内容；生成式 Judge、模型输出和旧配置相关要求已由 [Jev 后续规格](../jev-judge/spec.md) 替代。当前使用方法见 [引擎文档](../../docs/text-engine.md)，能力边界见 [交接状态](../../docs/status.md)。
 
 ## Problem Statement
 
