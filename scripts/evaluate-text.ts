@@ -62,7 +62,9 @@ async function main() {
         incompleteCheck: stages.some((stage) => stage.status !== "completed"),
         stages: Object.fromEntries(Object.entries(result.stages).map(([name, stage]) => [name, {
           status: stage.status, error: stage.error, durationMs: stage.durationMs,
-          ...(name === "judge" ? { decision: result.stages.judge.decision, httpStatus: result.stages.judge.httpStatus } : {}),
+          ...(name === "judge" ? { decision: result.stages.judge.decision, httpStatus: result.stages.judge.httpStatus,
+            invalidOutputReason: result.stages.judge.invalidOutputReason,
+            invalidOutputDetails: result.stages.judge.invalidOutputDetails } : {}),
         }])), durationMs: result.durationMs });
       if (userInput && results.length % 30 === 0) console.error(JSON.stringify({ completed: results.length, planned: samples.length * runs }));
       // 显式评测的样本间隔，不是引擎超时或失败重试。

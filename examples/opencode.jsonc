@@ -1,5 +1,0 @@
-{
-  "$schema": "https://opencode.ai/config.json",
-  // 此路径相对于 OpenCode 项目配置所在目录；按实际仓库位置调整。
-  "plugins": ["../opencode-security-plugin"]
-}

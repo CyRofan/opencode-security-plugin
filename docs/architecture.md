@@ -60,7 +60,7 @@ session.prompt 已提取正文并路由到记忆投毒检测域；session.http.r
 
 独立文本引擎已实现本地 YAML 快照、关键词、正则、一次独立 Jev Choice 三分类及三态结果汇总。Jev 返回原生分类、概率、置信度及实际模型版本，不再要求生成式理由或原文引用；规则证据继续保留。调用方通过独立文本入口提供正文、来源和可选上下文；引擎不直接接收 SecurityEvent。具体接口、环境配置及评测方式见 [文本检测引擎](text-engine.md)。
 
-仅记忆投毒域的 prompt 入口调用引擎；该域其他入口和其他三个域仍为占位。插件加载用户正文专用本地规则，来源与边界见 [用户输入检测](user-input-poisoning.md)。禁用示例规则不执行；评测目录的演示规则不代表完整检测覆盖。
+仅记忆投毒域的 prompt 入口调用引擎；该域其他入口和其他三个域仍为占位。插件加载用户正文专用本地规则，来源与边界见 [用户输入检测](user-input-poisoning.md)。评测目录的演示规则不代表完整检测覆盖。
 
 规则 ID 使用本地命名空间 `LOCAL-*`；完整 ATR 语义兼容与规则库导入留待后续验证，不声称 ATR 兼容。不得将字段形似视为执行语义兼容。
 
@@ -68,9 +68,11 @@ session.prompt 已提取正文并路由到记忆投毒检测域；session.http.r
 
 ## 验证基线
 
-当前代码基线为 `77fccee`。插件 SDK 锁定 `@opencode/plugin@2.1.0`；2026-10-26 在实际 OpenCode `2.0.32` 验证了本地加载、持久正文与主模型输入替换、三种 TUI 提示及重载。模型端点使用本地受控服务，不能当作真实 Jev 分类质量证据。
+2026-10-28 插件 SDK 升级并锁定 `@opencode/plugin@2.2.0`，对应 OpenCode 2.2.0；既有 hook、RPC、事件订阅与 toast 实现通过新 SDK 的类型检查及 57 项本地测试，无需迁移现有接口。2.2.0 发布说明中的 AI Promise 导出变更不涉及本项目直接导入，项目也没有自定义 OpenTUI renderable 或直接锁定旧版 OpenTUI。继续使用独立 Jev 原生适配器，不因宿主增加 Decision API 而迁移检测引擎。
 
-真实 EdgeOne Jev 共执行两批、各 180 次；追加复测仍有一次无效响应，严格质量验收未通过。当前验证状态和预算边界见[交接状态](status.md)，原始结果见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。下列官方链接用于说明契约，不替代宿主运行与质量证据。
+历史功能基线为 `77fccee`；2026-10-26 在实际 OpenCode `2.0.32`、SDK `2.1.0` 下验证了本地加载、持久正文与主模型输入替换、三种 TUI 提示及重载。模型端点使用本地受控服务，不能当作真实 Jev 分类质量证据。2026-10-28 已在真实 2.2.0 TUI／宿主中使用真实 Jev 完成正常保留与恶意替换两条交互验证；替换 toast、持久正文及本地受控主模型收到的正文均核对通过。未重跑原生 uncertain／检查未完成提示及重载验证，不等同于完整质量验收。
+
+历史完整质量评测为两批、各 180 次；追加复测仍有一次无效响应，严格质量验收未通过。之后已完成有边界的概率舍入兼容修复及定向验证，但完整三轮质量验收未重跑。当前验证状态和预算边界见[交接状态](status.md)，原始结果见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。下列官方链接用于说明契约，不替代宿主运行与质量证据。
 
 - [插件 API、hook 及事件边界](https://opencode.ai/v2/docs/build/plugins/)
 - [迁移示例与工具前阻断](https://opencode.ai/v2/docs/build/plugins/migrate-v1/)

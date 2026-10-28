@@ -78,11 +78,15 @@ detection:
 
 首版不按 confidence 或单类概率设置门槛。即使置信度低，只要响应合法，也直接映射 choice。confidence 与攻击类别概率是不同字段，不相互替代。数值校验要求概率和置信度在 0–1 内、三类概率齐全且总和为 1、choice 对应最高概率；总和及最高值比较允许 1e-6 浮点误差，这不是风险阈值。
 
+2026-10-28 用户明确批准追加舍入兼容：三个概率都符合两位小数精度，且总和为 0.99 或 1.01 时，也可完成；精度及目标总和比较仅容忍 JS 浮点表示尾差。原有总和 1 的 1e-6 校验继续适用。兼容情况下 decision 附带 `probabilityRounding: "two-decimal"`，评测报告保留该标记；概率保持服务返回原值，不归一化。缺字段、非法数值、所选类别非最高概率、其他不合法总和仍为 invalid-output。这是项目主动兼容服务偏差，不是服务端舍入原因已确认。
+
 ## 模型适配器与耗时
 
 仅使用 Jev 原生 HTTP API，生成式 Judge 已移除，无其他模型兜底。完整 endpoint、model、apiKey 必须显式提供。请求包含 model、state 和 questions；state 仅含 content、source、可选 context。固定问题标识为 injection，类型为 choice，三类为 malicious、benign、uncertain，判断问题及类别描述与正文分开。不发送规则命中或评测标签。
 
 响应从 answers.injection 获取 choice、probabilities 和 confidence，从外层 model 获取实际模型版本，仍在引擎边界校验。类型合法不等于分类一定正确；不尝试让模型生成解释或从自由文本恢复结论。
+
+无效响应的 Judge 阶段及评测报告包含固定 `invalidOutputReason`：`response-schema` 表示响应结构或字段类型／范围不合法（也包含非 JSON 响应），`probability-sum` 表示三类概率总和既不满足 1e-6 容差也不满足上述舍入兼容，`choice-not-maximum` 表示所选类别不是最高概率。后两类额外提供 `invalidOutputDetails`，仅含通过结构与范围校验的三类概率及总和；结构非法时不提取数值。诊断不包含原始响应、服务端任意字符串或额外字段，不改变失败处置，日志与 TUI 不增加这些数值。
 
 按照已确认要求，首版没有检测时限或正则执行时限，也没有自动重试。默认传输使用 Node.js 原生 HTTP/HTTPS 独立 socket，不设置应用层超时、不跟随重定向。远端服务、网络和操作系统仍可能主动断开；注入其他传输时，其超时与重试行为由集成方负责。耗时请求及正则可能持续阻塞调用方。
 
@@ -123,7 +127,7 @@ npm run evaluate:text -- --runs 3
 - 分母为零时比率为 null。通用 text 模式不设质量通过门槛；用户输入模式另按下方的逐轮标准验收。
 - 全部检查不完整时退出码为 2；配置、样本或初始化错误为 1；部分失败仍输出完整统计，需检查报告状态。
 
-`npm test` 使用可控 Jev 响应、传输及本地 HTTP 服务，不依赖外部模型。2026-10-26 已执行两批用户授权的真实 EdgeOne Jev 评测，共 360 次；追加复测第三轮仍有一次 invalid-output，严格质量验收未通过，见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。已批准预算全部用完，后续真实请求需另行明确预算，不能据本地测试或零误替换单项声称整体通过。
+`npm test` 使用可控 Jev 响应、传输及本地 HTTP 服务，不依赖外部模型。2026-10-26 已执行两批用户授权的真实 EdgeOne Jev 评测，共 360 次；追加复测第三轮仍有一次 invalid-output，严格质量验收未通过，见[验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。此为历史质量报告；之后已实现上述概率舍入兼容，但完整三轮未重跑。当前授权用量与任务范围见[交接状态](status.md)，不能据定向测试或零误替换单项声称整体通过。
 
 ## 检查与故障排查
 
@@ -149,6 +153,6 @@ npm run evaluate:text -- --runs 3
 
 插件已在 session.prompt 调用独立引擎，初始化加载位置项目目录的 `.env`，使用随插件模块定位的 `rules/user-input/`。最终 malicious 整条固定替换，未决或检查失败保留原文并告警；不读取会话历史或解析附件。详细加载与通知契约见 [用户输入检测](user-input-poisoning.md)。
 
-`npm run evaluate:prompt` 使用与插件共享的用户输入指令、规则和替换实现，固定六类 60 条样本各三轮，合规运行规划 180 次真实请求。可追加 `--interval-ms 1200` 设置显式评测间隔，不改变运行时引擎，也不自动重试。报告分轮验收零误替换、至少 27／30 攻击明确检出并替换、无技术未完成，uncertain 不计正确；原有误报／漏报定义继续保留。退出码 3 表示该验收未通过，不能只看 status completed 判断质量。运行命令前需单独确认预算，现有 360 次不是可继续使用的余额。
+`npm run evaluate:prompt` 使用与插件共享的用户输入指令、规则和替换实现，固定六类 60 条样本各三轮，合规运行规划 180 次真实请求。可追加 `--interval-ms 1200` 设置显式评测间隔，不改变运行时引擎，也不自动重试。报告分轮验收零误替换、至少 27／30 攻击明确检出并替换、无技术未完成，uncertain 不计正确；原有误报／漏报定义继续保留。退出码 3 表示该验收未通过，不能只看 status completed 判断质量。运行命令前需单独确认预算，历史质量评测及其他定向任务的授权不自动转为完整评测余额。
 
 Judge 的 service-error 可另带安全的 httpStatus，用于区分 HTTP 失败；连接或其他无 HTTP 响应的失败不伪造状态码。报告仍不包含原始服务错误、URL、认证头或正文。真实评测报告见 [验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。

@@ -61,6 +61,75 @@ test("原生 uncertain 正常完成，完整响应允许浮点序列化误差", 
   assert.equal(result.stages.judge.decision?.confidence, 0);
 });
 
+test("无效响应诊断区分结构、概率和与最高类别且不泄漏服务字段", async (t) => {
+  const directory = await rulesDirectory(t);
+  const cases = [
+    { injection: { ...benign.answers.injection, choice: "secret-response" }, reason: "response-schema" },
+    { injection: { ...benign.answers.injection, probabilities: { benign: 0.2, malicious: 0.2, uncertain: 0.2 } }, reason: "probability-sum" },
+    { injection: { ...benign.answers.injection, probabilities: { benign: 0.1, malicious: 0.8, uncertain: 0.1 } }, reason: "choice-not-maximum" },
+  ];
+  for (const { injection, reason } of cases) {
+    const engine = await initializeTextEngine({ rulesDirectory: directory,
+      judge: { async assess() { return { model: "secret-response", answers: { injection }, "secret-field": "secret-response" }; } } });
+    const result = await engine.detect({ content: "normal", source: "user-input" });
+    assert.equal(result.verdict, "uncertain");
+    assert.equal(result.stages.judge.error, "invalid-output");
+    assert.equal(result.stages.judge.invalidOutputReason, reason);
+    assert.deepEqual(result.stages.judge.invalidOutputDetails, reason === "response-schema" ? undefined : {
+      probabilities: injection.probabilities,
+      sum: Object.values(injection.probabilities).reduce((total, value) => total + value, 0),
+    });
+    assert.equal(result.stages.judge.decision, undefined);
+    assert.ok(!JSON.stringify(result).includes("secret-response"));
+    assert.ok(!JSON.stringify(result).includes("secret-field"));
+  }
+});
+
+test("真实诊断的两位小数 0.99 概率总和按授权兼容并保留原值", async (t) => {
+  const probabilities = { benign: 0.05, malicious: 0.93, uncertain: 0.01 };
+  const output = jevResponse("malicious");
+  output.answers.injection.probabilities = probabilities;
+  const engine = await initializeTextEngine({ rulesDirectory: await rulesDirectory(t),
+    judge: { async assess() { return output; } } });
+  const result = await engine.detect({ content: "normal", source: "user-input" });
+  assert.equal(result.verdict, "malicious");
+  assert.equal(result.stages.judge.status, "completed");
+  assert.equal(result.stages.judge.decision?.probabilityRounding, "two-decimal");
+  assert.deepEqual(result.stages.judge.decision?.probabilities, probabilities);
+  assert.equal(result.stages.judge.invalidOutputReason, undefined);
+});
+
+test("舍入兼容仅接纳两位小数 0.99 或 1.01 且保持最高类别校验", async (t) => {
+  const directory = await rulesDirectory(t);
+  const cases = [
+    { probabilities: { benign: 0.05, malicious: 0.95, uncertain: 0.01 }, error: undefined, rounding: true },
+    { probabilities: { benign: 0.05, malicious: 0.94, uncertain: 0.01 }, error: undefined, rounding: false },
+    { probabilities: { benign: 0.05, malicious: 0.94, uncertain: 0.0099995 }, error: undefined, rounding: false },
+    { probabilities: { benign: 0.05, malicious: 0.92, uncertain: 0.01 }, error: "probability-sum" },
+    { probabilities: { benign: 0.05, malicious: 0.96, uncertain: 0.01 }, error: "probability-sum" },
+    { probabilities: { benign: 0.051, malicious: 0.929, uncertain: 0.01 }, error: "probability-sum" },
+    { probabilities: { benign: 0.051, malicious: 0.949, uncertain: 0.01 }, error: "probability-sum" },
+    { probabilities: { benign: 0.05000001, malicious: 0.93, uncertain: 0.00999999 }, error: "probability-sum" },
+    { probabilities: { benign: 0.05, malicious: 0.931, uncertain: 0.01 }, error: "probability-sum" },
+    { probabilities: { benign: 0.93, malicious: 0.05, uncertain: 0.01 }, error: "choice-not-maximum" },
+    { probabilities: { benign: -0.01, malicious: 0.99, uncertain: 0.01 }, error: "response-schema" },
+    { probabilities: { benign: 0, malicious: Infinity, uncertain: 0.01 }, error: "response-schema" },
+  ];
+  for (const { probabilities, error, rounding } of cases) {
+    const output = jevResponse("malicious");
+    output.answers.injection.probabilities = probabilities;
+    const engine = await initializeTextEngine({ rulesDirectory: directory, judge: { async assess() { return output; } } });
+    const result = await engine.detect({ content: "normal", source: "user-input" });
+    assert.equal(result.stages.judge.invalidOutputReason, error, JSON.stringify(probabilities));
+    assert.equal(result.stages.judge.status, error ? "failed" : "completed");
+    assert.equal(result.verdict, error ? "uncertain" : "malicious");
+    if (!error) {
+      assert.deepEqual(result.stages.judge.decision?.probabilities, probabilities);
+      assert.equal(result.stages.judge.decision?.probabilityRounding, rounding ? "two-decimal" : undefined);
+    }
+  }
+});
+
 test("默认 HTTP 传输完成 Jev 请求，并将服务错误及断流映射为失败", async (t) => {
   let requests = 0;
   const server = createServer(async (request, response) => {

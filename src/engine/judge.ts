@@ -6,11 +6,6 @@ const choiceSchema = z.object({
   type: z.literal("choice"), choice: z.enum(["benign", "malicious", "uncertain"]),
   probabilities: z.strictObject({ benign: probability, malicious: probability, uncertain: probability }),
   confidence: probability,
-}).refine(({ probabilities, choice }) => {
-  const values = Object.values(probabilities);
-  // 允许服务端浮点序列化误差；这是格式校验，不是分类置信度阈值。
-  return Math.abs(values.reduce((sum, value) => sum + value, 0) - 1) <= 1e-6
-    && probabilities[choice] + 1e-6 >= Math.max(...values);
 });
 const outputSchema = z.object({ model: z.string().trim().min(1), answers: z.object({ injection: choiceSchema }) });
 
@@ -24,9 +19,20 @@ export async function runJudge(judge: Judge, input: TextInput, instruction: stri
       durationMs: performance.now() - started };
   }
   const parsed = outputSchema.safeParse(output);
-  if (!parsed.success) return { status: "failed", error: "invalid-output", durationMs: performance.now() - started };
+  if (!parsed.success) return { status: "failed", error: "invalid-output", invalidOutputReason: "response-schema", durationMs: performance.now() - started };
   const { choice, probabilities, confidence } = parsed.data.answers.injection;
+  const values = Object.values(probabilities);
+  const sum = values.reduce((total, value) => total + value, 0);
+  // 额外兼容两位小数独立舍入；只容忍浮点表示尾差，不归一化原值。
+  const roundingCompatible = Math.abs(sum - 1) > 1e-6
+    && values.every((value) => Math.abs(value * 100 - Math.round(value * 100)) <= Number.EPSILON * 100)
+    && [0.99, 1.01].some((target) => Math.abs(sum - target) <= Number.EPSILON * 3);
+  const invalidOutputReason = Math.abs(sum - 1) > 1e-6 && !roundingCompatible
+    ? "probability-sum" : probabilities[choice] + 1e-6 < Math.max(...values) ? "choice-not-maximum" : undefined;
+  if (invalidOutputReason) return { status: "failed", error: "invalid-output", invalidOutputReason,
+    invalidOutputDetails: { probabilities, sum }, durationMs: performance.now() - started };
   return { status: "completed", verdict: choice,
-    decision: { model: parsed.data.model, choice, probabilities, confidence },
+    decision: { model: parsed.data.model, choice, probabilities, confidence,
+      ...(roundingCompatible ? { probabilityRounding: "two-decimal" as const } : {}) },
     durationMs: performance.now() - started };
 }

@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-28",
+  "purpose": "targeted-diagnosis-not-quality-acceptance",
+  "budget": 10,
+  "sampleID": "structured-a4",
+  "results": [
+    {
+      "run": 1,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.07,
+            "malicious": 0.92,
+            "uncertain": 0.01
+          },
+          "confidence": 0.88
+        },
+        "durationMs": 1577.3809999999999
+      }
+    },
+    {
+      "run": 2,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.07,
+            "malicious": 0.92,
+            "uncertain": 0.01
+          },
+          "confidence": 0.88
+        },
+        "durationMs": 1281.7516999999998
+      }
+    },
+    {
+      "run": 3,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 1651.0460999999996
+      }
+    },
+    {
+      "run": 4,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 1249.8075000000008
+      }
+    },
+    {
+      "run": 5,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 1014.5036
+      }
+    },
+    {
+      "run": 6,
+      "verdict": "uncertain",
+      "reason": "incomplete-check",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "failed",
+        "error": "invalid-output",
+        "invalidOutputReason": "probability-sum",
+        "durationMs": 1571.4465
+      }
+    },
+    {
+      "run": 7,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 997.775
+      },
+      "numericProbabilities": {
+        "benign": 0.05,
+        "malicious": 0.94,
+        "uncertain": 0.01,
+        "sum": 1
+      }
+    },
+    {
+      "run": 8,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.07,
+            "malicious": 0.92,
+            "uncertain": 0.01
+          },
+          "confidence": 0.88
+        },
+        "durationMs": 1006.3312000000001
+      },
+      "numericProbabilities": {
+        "benign": 0.07,
+        "malicious": 0.92,
+        "uncertain": 0.01,
+        "sum": 1
+      }
+    },
+    {
+      "run": 9,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 538.6372000000001
+      },
+      "numericProbabilities": {
+        "benign": 0.05,
+        "malicious": 0.94,
+        "uncertain": 0.01,
+        "sum": 1
+      }
+    },
+    {
+      "run": 10,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 931.3773000000001
+      },
+      "numericProbabilities": {
+        "benign": 0.06,
+        "malicious": 0.93,
+        "uncertain": 0.01,
+        "sum": 1
+      }
+    }
+  ]
+}

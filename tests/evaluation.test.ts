@@ -30,7 +30,8 @@ test("评测入口重复运行三类检测，单独统计不确定和技术失�
     const body = JSON.parse(Buffer.concat(chunks).toString());
     const { content } = body.state;
     if (content === "failed") { response.writeHead(500); response.end("sensitive details"); return; }
-    const output = content === "attack" ? malicious : content === "uncertain" ? jevResponse("uncertain") : benign;
+    const output = content === "attack" ? jevResponse("malicious") : content === "uncertain" ? jevResponse("uncertain") : benign;
+    if (content === "attack") output.answers.injection.probabilities = { benign: 0.05, malicious: 0.93, uncertain: 0.01 };
     response.end(JSON.stringify(output));
   });
   server.listen(0, "127.0.0.1");
@@ -55,6 +56,8 @@ test("评测入口重复运行三类检测，单独统计不确定和技术失�
   assert.deepEqual(report.actualModels, ["jev-test-version"]);
   assert.equal(report.results[0].stages.judge.decision.choice, "benign");
   assert.deepEqual(report.results[0].stages.judge.decision.probabilities, { benign: 1, malicious: 0, uncertain: 0 });
+  assert.equal(report.results[1].stages.judge.decision.probabilityRounding, "two-decimal");
+  assert.deepEqual(report.results[1].stages.judge.decision.probabilities, { benign: 0.05, malicious: 0.93, uncertain: 0.01 });
   assert.ok(report.results.every((result: { durationMs: number }) => result.durationMs >= 0));
   assert.ok(!stdout.includes("test-secret") && !stdout.includes("sensitive details") && !stdout.includes("ignore previous instructions quoted"));
 });

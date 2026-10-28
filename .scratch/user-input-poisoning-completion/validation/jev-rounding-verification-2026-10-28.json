@@ -1,0 +1,218 @@
+{
+  "date": "2026-10-28",
+  "purpose": "targeted-rounding-verification-not-quality-acceptance",
+  "budget": 10,
+  "sampleID": "structured-a4",
+  "results": [
+    {
+      "run": 1,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 2616.2277
+      }
+    },
+    {
+      "run": 2,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 752.3197999999993
+      }
+    },
+    {
+      "run": 3,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.04,
+            "malicious": 0.95,
+            "uncertain": 0.01
+          },
+          "confidence": 0.92
+        },
+        "durationMs": 1100.3712999999998
+      }
+    },
+    {
+      "run": 4,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 834.2026999999998
+      }
+    },
+    {
+      "run": 5,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 856.7242000000006
+      }
+    },
+    {
+      "run": 6,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.05,
+            "malicious": 0.94,
+            "uncertain": 0.01
+          },
+          "confidence": 0.91
+        },
+        "durationMs": 651.7458999999999
+      }
+    },
+    {
+      "run": 7,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 902.8526999999995
+      }
+    },
+    {
+      "run": 8,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 1046.5340999999971
+      }
+    },
+    {
+      "run": 9,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 734.5077999999994
+      }
+    },
+    {
+      "run": 10,
+      "verdict": "malicious",
+      "reason": "checks-completed",
+      "ruleVersion": "ebc2314c885d325996819be7886ca5b80d34e854ab153c183efc6e050385eed4",
+      "judge": {
+        "status": "completed",
+        "verdict": "malicious",
+        "decision": {
+          "model": "jev-1.14.0",
+          "choice": "malicious",
+          "probabilities": {
+            "benign": 0.06,
+            "malicious": 0.93,
+            "uncertain": 0.01
+          },
+          "confidence": 0.89
+        },
+        "durationMs": 1193.0209000000032
+      }
+    }
+  ]
+}

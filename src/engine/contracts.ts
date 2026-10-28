@@ -54,6 +54,11 @@ export interface JudgeStage {
   readonly decision?: JevDecision;
   readonly error?: string;
   readonly httpStatus?: number;
+  readonly invalidOutputReason?: "response-schema" | "probability-sum" | "choice-not-maximum";
+  readonly invalidOutputDetails?: {
+    readonly probabilities: Readonly<Record<Verdict, number>>;
+    readonly sum: number;
+  };
   readonly durationMs: number;
 }
 
@@ -68,6 +73,7 @@ export interface JevDecision {
   readonly choice: Verdict;
   readonly probabilities: Readonly<Record<Verdict, number>>;
   readonly confidence: number;
+  readonly probabilityRounding?: "two-decimal";
 }
 
 // 外部模型/适配器的返回值始终在引擎边界校验，不信任静态类型。

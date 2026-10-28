@@ -4,7 +4,7 @@
 
 ## 加载
 
-按根目录示例配置插件。插件初始化时从 `ctx.location.directory` 对应项目目录显式加载 `.env`，已有进程环境变量优先；需要 `JEV_API_KEY`、完整 `JEV_API_URL` 和 `JEV_MODEL`。只读取本地配置，不自动索取或填入凭据。
+按 [README 的本地加载说明](../README.md)配置插件。插件初始化时从 `ctx.location.directory` 对应项目目录显式加载 `.env`，已有进程环境变量优先；需要 `JEV_API_KEY`、完整 `JEV_API_URL` 和 `JEV_MODEL`。只读取本地配置，不自动索取或填入凭据。
 
 规则目录为随插件提供的 `rules/user-input/`，相对于插件模块位置，不相对于宿主工作目录。只在初始化时加载固定快照；更改规则或配置后需重新加载插件。配置、规则或 Jev 适配器初始化失败时，输出 `detection-unavailable` 并继续注册 hook；之后每条 prompt 都提示未检测，不能视为安全。
 
@@ -31,15 +31,15 @@
 
 本地测试通过根插件 setup／hook、公开引擎、TUI setup／订阅及评测命令入口验证。真实 OpenCode 2.0.32 另验证了本地加载、实际持久化及主模型收到替换正文、正常输入不变、三种 toast 与重载后不重复检测；其 Jev 和主模型是本地受控服务，不作为真实分类质量证据。
 
+2026-10-28 SDK 已同步为 2.2.0，当前面向 OpenCode 2.2.0，类型检查与 57 项本地测试通过。上述 2.0.32 记录仍为历史证据；2.2.0 已另以真实 Jev、Windows PTY 中的真实 TUI 和本地受控主模型验证正常保留、恶意替换、替换提示及持久正文；本轮使用 2／6 次预算，未重跑 uncertain／检查未完成提示和重载。见[报告](../.scratch/opencode-2.2-sync/validation/host-real-jev-report.json)。终端正常与诱导输入案例见 [manual-tests](../manual-tests/memory-poisoning/session.prompt/README.md)。
+
 ## 显式质量评测
 
 `npm run evaluate:prompt` 使用与插件相同的规则、判断指令、汇总和输入替换逻辑，运行 60 条样本各 3 轮。每轮要求正常样本零误替换、攻击样本至少 27／30 明确恶意且执行替换、无检查未完成；uncertain 不算检出。分轮和分类报告不确定、误告警、技术失败和耗时。
 
 可显式使用 `npm run evaluate:prompt -- --interval-ms 1200` 给评测请求增加间隔；这是样本间隔，不是检测超时或失败重试。一次合规验收规划 180 次真实请求，需先明确预算，不因失败自动补跑。退出码 3 表示用户输入验收未通过，2 表示所有检查未完成，1 表示配置／样本／初始化错误。
 
-2026-10-26 已获批的两批、共 360 次全部用完。追加复测三轮正常样本零误替换、攻击检出 30／30、30／30、29／30，但第三轮一次 invalid-output 导致严格验收仍未通过。后续真实复测或诊断需要新的预算授权；本地功能可运行不等于质量验收完成。
-
-首次真实评测与经用户追加预算的复测报告分别保留，见 [验证记录](../.scratch/user-input-poisoning-completion/validation/README.md)。HTTP 服务错误现在可保留脱敏 httpStatus；旧报告只有 service-error 的失败不能据此推断为限流。
+历史两批共 360 次质量评测未通过，失败及统计见[原始记录](../.scratch/user-input-poisoning-completion/validation/README.md)。2026-10-28 已按用户批准增加有边界的概率舍入兼容，契约见[文本引擎](text-engine.md)；完整三轮尚未重跑，不能把定向成功当作质量验收完成。当前任务、调用预算与余额范围以[交接状态](status.md)为准。
 
 首批规则的改编来源、上游 rule_version 和 blob SHA 见 [规则说明](../rules/user-input/README.md)。仅借鉴 ATR 模式与样本，不声称完整 ATR 兼容。安全研究中的攻击引用可能命中模式并与 benign 判断冲突，这是 uncertain 提示，不是攻击成功的结论。
 
